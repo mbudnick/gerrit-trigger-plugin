@@ -113,6 +113,7 @@ import java.util.regex.PatternSyntaxException;
 
 import jenkins.model.Jenkins;
 
+import org.jenkinsci.Symbol;
 import org.kohsuke.stapler.AncestorInPath;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.DataBoundSetter;
@@ -1007,12 +1008,9 @@ public class GerritTrigger extends Trigger<Job> {
                 for (Approval approval : event.getApprovals()) {
                     /** Ensure that this trigger is backwards compatible.
                      * Gerrit stream events changed to append approval info to
-                     * every comment-added event.  The change also includes a
-                     * new `updated` attribute to indicate whether the score
-                     * was changed.
+                     * every comment-added event.
                      **/
-                    if (approval.getUpdated() != null) {
-                        if (approval.getUpdated()
+                    if (approval.isUpdated()
                             && approval.getType().equals(
                                 commentAdded.getVerdictCategory())
                             && (approval.getValue().equals(
@@ -1020,7 +1018,6 @@ public class GerritTrigger extends Trigger<Job> {
                             || ("+" + approval.getValue()).equals(
                                 commentAdded.getCommentAddedTriggerApprovalValue()))) {
                             return true;
-                         }
                     } else {
                         if (approval.getType().equals(
                                 commentAdded.getVerdictCategory())
@@ -1838,10 +1835,11 @@ public class GerritTrigger extends Trigger<Job> {
      * The Descriptor for the Trigger.
      */
     @Extension
+    @Symbol("gerrit")
     public static final class DescriptorImpl extends TriggerDescriptor {
 
         /**
-         * Checks if the provided job type can support {@link #GerritTrigger#getBuildUnsuccessfulFilepath()}.
+         * Checks if the provided job type can support {@link GerritTrigger#getBuildUnsuccessfulFilepath()}.
          * I.e. if the job is an {@link AbstractProject}.
          *
          * @param job the job to check.
